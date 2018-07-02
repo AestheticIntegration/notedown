@@ -25,7 +25,7 @@ from nbconvert import TemplateExporter
 
 from pandocattributes import PandocAttributes
 
-languages = ['python', 'r', 'ruby', 'bash']
+languages = ['python', 'r', 'ruby', 'bash', 'ocaml']
 
 
 def cast_unicode(s, encoding='utf-8'):
@@ -495,7 +495,7 @@ class MarkdownWriter(NotebookWriter):
         for the code block.
         """
         if self.strip_outputs or not hasattr(cell, 'execution_count'):
-            return 'python'
+            return 'ocaml'
 
         attrs = cell.metadata.get('attributes')
         attr = PandocAttributes(attrs, 'dict')
