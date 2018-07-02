@@ -1,8 +1,14 @@
 import os
 
+import io
 import nbformat
 
+from .notedown import (MarkdownReader,
+                       MarkdownWriter)
+
 from tornado import web
+
+import nbformat as nbformat
 
 try:
     import notebook.transutils
@@ -10,10 +16,9 @@ try:
 except ImportError:
     from IPython.html.services.contents.filemanager import FileContentsManager
 
-from .main import ftdetect, convert
+from .main import ftdetect, convert, markdown_template
 
-
-class NotedownContentsManager(FileContentsManager):
+class ImandraNotedownContentsManager(FileContentsManager):
     """Subclass the IPython file manager to use markdown
     as the storage format for notebooks.
 
@@ -26,12 +31,10 @@ class NotedownContentsManager(FileContentsManager):
 
     To use, add the following line to ipython_notebook_config.py:
 
-      c.NotebookApp.contents_manager_class = 'notedown.NotedownContentsManager'
+      c.NotebookApp.contents_manager_class = 'notedown.ImandraNotedownContentsManager'
 
     Now markdown notebooks can be opened and edited in the browser!
     """
-    strip_outputs = False
-
     def _read_notebook(self, os_path, as_version=4):
         """Read a notebook from an os path."""
         with self.open(os_path, 'r', encoding='utf-8') as f:
@@ -39,10 +42,18 @@ class NotedownContentsManager(FileContentsManager):
                 if ftdetect(os_path) == 'notebook':
                     return nbformat.read(f, as_version=as_version)
                 elif ftdetect(os_path) == 'markdown':
-                    nbjson = convert(os_path,
-                                     informat='markdown',
-                                     outformat='notebook')
-                    return nbformat.reads(nbjson, as_version=as_version)
+
+                    with io.open(os_path, 'r', encoding='utf-8') as f:
+                        contents = f.read()
+
+                    reader = MarkdownReader(precode='',
+                                            magic=False,
+                                            match='ocaml')
+
+                    return reader.reads(contents, as_version=4)
+                    #nbjson = nbformat.writes(...)
+                    #return nbformat.reads(nbjson, as_version=as_version)
+
             except Exception as e:
                 raise web.HTTPError(
                     400,
@@ -55,11 +66,11 @@ class NotedownContentsManager(FileContentsManager):
             if ftdetect(os_path) == 'notebook':
                 nbformat.write(nb, f, version=nbformat.NO_CONVERT)
             elif ftdetect(os_path) == 'markdown':
-                nbjson = nbformat.writes(nb, version=nbformat.NO_CONVERT)
-                markdown = convert(nbjson,
-                                   informat='notebook',
-                                   outformat='markdown',
-                                   strip_outputs=self.strip_outputs)
+                # nbjson = nbformat.writes(nb, version=nbformat.NO_CONVERT)
+                writer = MarkdownWriter(markdown_template,
+                                        strip_outputs=True)
+
+                markdown = writer.writes(nb)
                 f.write(markdown)
 
     def get(self, path, content=True, type=None, format=None):
@@ -109,8 +120,3 @@ class NotedownContentsManager(FileContentsManager):
                                     reason='bad type')
             model = self._file_model(path, content=content, format=format)
         return model
-
-
-class NotedownContentsManagerStripped(NotedownContentsManager):
-    """NotedownContentsManager for writing stripped output markdown. """
-    strip_outputs = True
