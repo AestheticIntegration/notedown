@@ -528,7 +528,7 @@ class MarkdownWriter(NotebookWriter):
         for the code block.
         """
         if self.strip_outputs or not hasattr(cell, 'execution_count'):
-            return 'ocaml'
+            return '{.imandra .input}'
 
         attrs = cell.metadata.get('attributes')
         attr = PandocAttributes(attrs, 'dict')
