@@ -48,7 +48,7 @@ class ImandraNotedownContentsManager(FileContentsManager):
 
                     reader = MarkdownReader(precode='',
                                             magic=False,
-                                            match='ocaml')
+                                            match='strict')
 
                     return reader.reads(contents, as_version=4)
                     #nbjson = nbformat.writes(...)
