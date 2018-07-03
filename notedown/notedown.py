@@ -6,6 +6,7 @@ import os
 import re
 import subprocess
 import tempfile
+import yaml
 
 from six import PY3
 from six.moves import map
@@ -380,6 +381,7 @@ class MarkdownReader(NotebookReader):
         """
         lines = s.splitlines()
         meta_lines = []
+        meta = {}
 
         # Support markdown YAML metadata format
         if lines[0].startswith('---'):
@@ -388,6 +390,9 @@ class MarkdownReader(NotebookReader):
                     meta_lines.append(line)
                 else:
                     break
+
+            meta_str = "\n".join(meta_lines)
+            meta = yaml.load(meta_str)
 
             body_lines = lines[len(meta_lines)+2:]
             if body_lines[0] == "":
@@ -409,10 +414,17 @@ class MarkdownReader(NotebookReader):
 
         cells = header + self.create_cells(blocks)
 
+        kernels = {
+            'imandra': {'display_name': 'Imandra'},
+            'imandra-reason': {'display_name': 'Imandra (ReasonML)'}
+        }
+
+        kernel = meta.get('kernel', 'imandra')
+
         kernelspec = nbbase.NotebookNode()
-        kernelspec['display_name'] = 'Imandra'
-        kernelspec['language'] = ''
-        kernelspec['name'] = 'imandra'
+        kernelspec['display_name'] = kernels[kernel]['display_name']
+        # kernelspec['language'] = ''
+        kernelspec['name'] = meta.get('kernel', 'imandra')
 
         metadata = nbbase.NotebookNode()
         metadata['kernelspec'] = kernelspec
