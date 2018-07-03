@@ -362,6 +362,23 @@ class MarkdownReader(NotebookReader):
 
         Returns a notebook.
         """
+        lines = s.splitlines()
+        meta_lines = []
+
+        # Support markdown YAML metadata format
+        if lines[0].startswith('---'):
+            for line in lines[1:]:
+                if not line.startswith('---'):
+                    meta_lines.append(line)
+                else:
+                    break
+
+            body_lines = lines[len(meta_lines)+2:]
+            if body_lines[0] == "":
+                body_lines = body_lines[1:]
+
+            s = "\n".join(body_lines)
+
         all_blocks = self.parse_blocks(s)
         if self.pre_code_block['content']:
             # TODO: if first block is markdown, place after?
@@ -379,6 +396,9 @@ class MarkdownReader(NotebookReader):
 
         metadata = nbbase.NotebookNode()
         metadata['kernelspec'] = kernelspec
+
+        if len(meta_lines) > 0:
+            metadata['markdown_yaml_metadata'] = "\n".join(meta_lines)
 
         nb = nbbase.new_notebook(cells=cells, metadata=metadata)
 
@@ -448,6 +468,10 @@ class MarkdownWriter(NotebookWriter):
 
         # remove any blank lines added at start and end by template
         text = re.sub(r'\A\s*\n|^\s*\Z', '', body)
+
+        yaml_metadata = notebook['metadata'].get('markdown_yaml_metadata')
+        if yaml_metadata:
+            text = "---\n{}\n---\n\n{}".format(yaml_metadata, text)
 
         return cast_unicode(text, 'utf-8')
 
