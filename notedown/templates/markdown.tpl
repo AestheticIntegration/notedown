@@ -8,9 +8,7 @@
 {{ cell.source }}
 {% endblock markdowncell %}
 
-{% block outputs %}
-{{ cell | create_output_block }}
-{% endblock outputs %}
+{% block outputs %}{{ cell | create_output_block }}{% endblock outputs %}
 
 {% block headingcell scoped %}
 {{ '#' * cell.level }} {{ cell.source | replace('\n', ' ') }}
