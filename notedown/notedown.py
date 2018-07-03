@@ -27,6 +27,22 @@ from pandocattributes import PandocAttributes
 
 languages = ['python', 'r', 'ruby', 'bash', 'ocaml']
 
+notebook_header = """
+<img src="../static/notebook-images/imandra-header.svg" style="margin-top: 1em; margin-bottom: 1em">
+
+## Quick Links
+
+<div class="imandra-quick-links">
+    <a href="https://try.imandra.ai/notebooks/" class="imandra-quick-link">
+        <img src="../static/notebook-images/quick-link-notebooks.svg">
+        <div class="imandra-quick-link-text">View all notebooks</div>
+    </a>
+    <a href="../terminals/try" class="imandra-quick-link">
+        <img src="../static/notebook-images/quick-link-console.svg">
+        <div class="imandra-quick-link-text">Imandra terminal</div>
+    </a>
+</div>
+"""
 
 def cast_unicode(s, encoding='utf-8'):
     """Python 2/3 compatibility function derived from IPython py3compat."""
@@ -387,8 +403,11 @@ class MarkdownReader(NotebookReader):
 
         blocks = [self.process_code_block(block) for block in all_blocks]
 
-        cells = self.create_cells(blocks)
+        header_metadata = nbbase.NotebookNode()
+        header_metadata['imandra_header'] = True
+        header = [nbbase.new_markdown_cell(source=notebook_header, metadata=header_metadata)]
 
+        cells = header + self.create_cells(blocks)
 
         kernelspec = nbbase.NotebookNode()
         kernelspec['display_name'] = 'Imandra'
@@ -461,6 +480,10 @@ class MarkdownWriter(NotebookWriter):
         return self.write(notebook)
 
     def writes(self, notebook):
+
+        if notebook['cells'][0]['metadata'].get('imandra_header'):
+            notebook['cells'] = notebook['cells'][1:]
+
         body, resources = self.exporter.from_notebook_node(notebook)
         self.resources = resources
 
