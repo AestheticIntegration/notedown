@@ -377,7 +377,8 @@ class MarkdownReader(NotebookReader):
             if body_lines[0] == "":
                 body_lines = body_lines[1:]
 
-            s = "\n".join(body_lines)
+            #Need the newline at the end for the codeblock regex to match
+            s = "\n".join(body_lines) + "\n"
 
         all_blocks = self.parse_blocks(s)
         if self.pre_code_block['content']:
