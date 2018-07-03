@@ -371,7 +371,16 @@ class MarkdownReader(NotebookReader):
 
         cells = self.create_cells(blocks)
 
-        nb = nbbase.new_notebook(cells=cells)
+
+        kernelspec = nbbase.NotebookNode()
+        kernelspec['display_name'] = 'Imandra'
+        kernelspec['language'] = ''
+        kernelspec['name'] = 'imandra'
+
+        metadata = nbbase.NotebookNode()
+        metadata['kernelspec'] = kernelspec
+
+        nb = nbbase.new_notebook(cells=cells, metadata=metadata)
 
         return nb
 
