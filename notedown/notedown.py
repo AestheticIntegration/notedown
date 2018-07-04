@@ -34,7 +34,7 @@ notebook_header = """
 ## Quick Links
 
 <div class="imandra-quick-links">
-    <a href="https://try.imandra.ai/notebooks/" class="imandra-quick-link">
+    <a href="/notebooks/" class="imandra-quick-link">
         <img src="../static/notebook-images/quick-link-notebooks.svg">
         <div class="imandra-quick-link-text">View all notebooks</div>
     </a>
