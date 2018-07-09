@@ -394,19 +394,40 @@ class MarkdownReader(NotebookReader):
         cells = self.create_cells(blocks)
 
         kernels = {
-            'imandra': {'display_name': 'Imandra'},
-            'imandra-reason': {'display_name': 'Imandra (ReasonML)'}
+            'imandra': {
+                "display_name": "Imandra",
+                "language": "",
+                "language_info": {
+                    "codemirror_mode": "mllike",
+                    "file_extension": ".ml",
+                    "mimetype": "text",
+                    "name": "ocaml",
+                    "version": "0.1.0"
+                }
+            },
+            'imandra-reason': {
+                'display_name': 'Imandra (ReasonML)',
+                'language': 'imandra-reason',
+                "language_info": {
+                    "codemirror_mode": "javascript",
+                    "file_extension": ".re",
+                    "mimetype": "text",
+                    "name": "reasonml",
+                    "version": "0.1.0"
+                }
+            }
         }
 
         kernel = meta.get('kernel', 'imandra')
 
         kernelspec = nbbase.NotebookNode()
         kernelspec['display_name'] = kernels[kernel]['display_name']
-        # kernelspec['language'] = ''
+        kernelspec['language'] = kernels[kernel]['language']
         kernelspec['name'] = meta.get('kernel', 'imandra')
 
         metadata = nbbase.NotebookNode()
         metadata['kernelspec'] = kernelspec
+        metadata['language_info'] = nbbase.NotebookNode(**kernels[kernel]['language_info'])
 
         if len(meta_lines) > 0:
             metadata['markdown_yaml_metadata'] = "\n".join(meta_lines)
