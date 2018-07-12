@@ -363,21 +363,21 @@ class MarkdownReader(NotebookReader):
         Returns a notebook.
         """
         lines = s.splitlines()
-        meta_lines = []
-        meta = {}
+        custom_meta_lines = []
+        custom_meta = {}
 
         # Support markdown YAML metadata format
         if lines[0].startswith('---'):
             for line in lines[1:]:
                 if not line.startswith('---'):
-                    meta_lines.append(line)
+                    custom_meta_lines.append(line)
                 else:
                     break
 
-            meta_str = "\n".join(meta_lines)
-            meta = yaml.load(meta_str)
+            custom_meta_str = "\n".join(custom_meta_lines)
+            custom_meta = yaml.load(custom_meta_str)
 
-            body_lines = lines[len(meta_lines)+2:]
+            body_lines = lines[len(custom_meta_lines)+2:]
             if body_lines[0] == "":
                 body_lines = body_lines[1:]
 
@@ -418,19 +418,19 @@ class MarkdownReader(NotebookReader):
             }
         }
 
-        kernel = meta.get('kernel', 'imandra')
+        kernel = custom_meta.get('kernel', 'imandra')
 
         kernelspec = nbbase.NotebookNode()
         kernelspec['display_name'] = kernels[kernel]['display_name']
         kernelspec['language'] = kernels[kernel]['language']
-        kernelspec['name'] = meta.get('kernel', 'imandra')
+        kernelspec['name'] = custom_meta.get('kernel', 'imandra')
 
         metadata = nbbase.NotebookNode()
         metadata['kernelspec'] = kernelspec
         metadata['language_info'] = nbbase.NotebookNode(**kernels[kernel]['language_info'])
 
-        if len(meta_lines) > 0:
-            metadata['markdown_yaml_metadata'] = "\n".join(meta_lines)
+        if len(custom_meta_lines) > 0:
+            metadata['custom_metadata'] = "\n".join(custom_meta_lines)
 
         nb = nbbase.new_notebook(cells=cells, metadata=metadata)
 
@@ -502,9 +502,9 @@ class MarkdownWriter(NotebookWriter):
         # remove any blank lines added at start and end by template
         text = re.sub(r'\A\s*\n|^\s*\Z', '', body)
 
-        yaml_metadata = notebook['metadata'].get('markdown_yaml_metadata')
-        if yaml_metadata:
-            text = "---\n{}\n---\n\n{}".format(yaml_metadata, text)
+        custom_meta = notebook['metadata'].get('custom_metadata')
+        if custom_meta:
+            text = "---\n{}\n---\n\n{}".format(custom_meta, text)
 
         return cast_unicode(text, 'utf-8')
 
