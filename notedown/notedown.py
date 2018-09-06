@@ -409,10 +409,13 @@ class MarkdownReader(NotebookReader):
                 'display_name': 'Imandra (ReasonML)',
                 'language': 'imandra-reason',
                 "language_info": {
-                    "codemirror_mode": "javascript",
+                    "codemirror_mode": "rust",
                     "file_extension": ".re",
                     "mimetype": "text",
-                    "name": "reasonml",
+                    #default to rust for nbconvert + docs build, so rust pygments lexer is used
+                    #when actually running the notebook, the kernel responds with language_info and this
+                    #is overridden back to reasonml
+                    "name": "rust",
                     "version": "0.1.0"
                 }
             }
